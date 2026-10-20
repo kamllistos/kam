@@ -1,0 +1,48 @@
+name: Wrong result
+description: kam missed a risky IAM change, or flagged a harmless one
+title: "wrong result: "
+labels: [rules, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These reports are the fastest way to make kam better. **Remove account IDs, names and anything
+        sensitive** before pasting. If kam missed something that could hide a real attack, consider
+        [reporting it privately](https://github.com/kamllistos/kam/security/advisories/new) instead.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong?
+      options:
+        - kam missed a risky change (false negative)
+        - kam flagged a harmless change (false positive)
+        - wrong severity
+        - confusing explanation
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: The IAM change
+      description: The Terraform resources or policy JSON before and after. The smallest example that shows the problem.
+      render: hcl
+    validations:
+      required: true
+  - type: textarea
+    id: got
+    attributes:
+      label: What kam reported
+      render: text
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and why
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: kam version
+      description: Output of `kam version`
+    validations:
+      required: true

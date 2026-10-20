@@ -8,10 +8,18 @@ on:
 permissions:
   contents: read
 
+# A new push to the same branch cancels the older, now-outdated run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
+        # ubuntu and windows are required to merge. macOS runs too but is not
+        # required, because GitHub's macOS runners are often queued for a long time.
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -19,6 +27,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: gofmt
+        if: runner.os == 'Linux'
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; echo "run gofmt -w on the files above"; exit 1; }
       - run: go vet ./...
       - run: go test ./...
 

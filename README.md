@@ -6,6 +6,12 @@
 
 <p align="center"><b>Know what your Terraform plan grants before you apply it.</b></p>
 
+<p align="center">
+  <a href="https://github.com/kamllistos/kam/actions/workflows/ci.yml"><img src="https://github.com/kamllistos/kam/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/kamllistos/kam/releases"><img src="https://img.shields.io/github/v/release/kamllistos/kam?include_prereleases" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/kamllistos/kam" alt="MIT license"></a>
+</p>
+
 `kam diff` reads a Terraform plan and works out how every IAM role, user and group's
 **effective access** changes, then flags the changes that matter: privilege escalation
 paths, admin grants, roles that anyone on GitHub can assume, account-wide secret reads.
@@ -155,15 +161,33 @@ The markdown report starts with `<!-- kam-diff -->` so bots can update one comme
   `IAMFullAccess`, `AmazonS3FullAccess`, `AmazonS3ReadOnlyAccess`). Others are reported as "contents not visible".
 - Policies and principals defined outside the plan (existing ARNs) are identified by name only.
 
-## Development
+## Updating
 
 ```sh
-go test ./...
-go run . diff testdata/plan.json
+brew upgrade kam                              # Homebrew
+go install github.com/kamllistos/kam@latest   # Go
 ```
 
-Releases are cut by pushing a `v*` tag; GoReleaser builds the binaries and updates the
-[Homebrew tap](https://github.com/kamllistos/homebrew-tap).
+Watch the repository (**Watch → Custom → Releases**) to hear about new versions. Each release
+lists new rules and fixes.
+
+## Contributing
+
+kam gets better with every real-world plan it sees. The most useful contributions:
+
+- **[Report a wrong result](https://github.com/kamllistos/kam/issues/new?template=wrong_result.yml)**:
+  a risky change kam missed, or a harmless one it flagged
+- **Add a rule** for an escalation path or dangerous action (see `internal/analyze/rules.go`)
+- **Ask or propose** in [Discussions](https://github.com/kamllistos/kam/discussions)
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, branch naming and how pull requests work.
+Security issues in kam itself go through [SECURITY.md](SECURITY.md), not public issues.
+
+## Roadmap
+
+- Azure RBAC role assignments and GCP IAM bindings
+- Resource-based policies (S3 bucket, KMS key, SQS/SNS) and permission boundaries
+- A larger catalog of AWS managed policies, refreshed automatically
 
 ## License
 
