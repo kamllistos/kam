@@ -1,5 +1,7 @@
 /dist/
 /kam
 /kam.exe
-*.tfplan
-tfplan
+# Terraform plan files in the repo root (not the internal/tfplan package)
+/*.tfplan
+/tfplan
+/plan.json
