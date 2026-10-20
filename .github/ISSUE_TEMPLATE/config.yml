@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability in kam
+    url: https://github.com/kamllistos/kam/security/advisories/new
+    about: Report privately. Please don't open a public issue.
+  - name: Question or idea
+    url: https://github.com/kamllistos/kam/discussions
+    about: Ask how to use kam or propose something big before building it.

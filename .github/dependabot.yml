@@ -1,0 +1,33 @@
+# Dependabot opens a pull request whenever something kam depends on has a
+# new version. CI runs on each one, so updates are tested before you merge.
+version: 2
+updates:
+  # Go modules (kam uses only the standard library today; this covers any added later)
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+    labels: [dependencies]
+
+  # Versions of the GitHub Actions used in .github/workflows and action.yml
+  - package-ecosystem: github-actions
+    directories: ["/", "/.github/workflows"]
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(ci)"
+    labels: [dependencies]
+
+  # The AWS provider used by the examples
+  - package-ecosystem: terraform
+    directories: ["/examples/*"]
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(examples)"
+    labels: [dependencies]
