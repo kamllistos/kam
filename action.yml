@@ -1,0 +1,64 @@
+name: kam diff
+description: Explain what IAM access a Terraform plan grants, and comment it on the pull request.
+branding:
+  icon: shield
+  color: red
+
+inputs:
+  plan:
+    description: Path to the plan JSON (terraform show -json tfplan > plan.json).
+    required: true
+  fail-on:
+    description: Fail the step when any principal reaches this severity (low, medium, high, critical, none).
+    default: none
+  accounts:
+    description: Comma-separated AWS account IDs you own, so trust from other accounts is flagged as external.
+    default: ""
+  version:
+    description: kam release tag to install, e.g. v0.1.0, or "latest".
+    default: latest
+
+outputs:
+  report:
+    description: Path to the markdown report, ready for a PR comment.
+    value: ${{ steps.diff.outputs.report }}
+  max-severity:
+    description: Highest severity found (info, low, medium, high, critical).
+    value: ${{ steps.diff.outputs.max-severity }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install kam
+      shell: bash
+      env:
+        KAM_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        case "$(uname -m)" in x86_64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) echo "unsupported arch" >&2; exit 1 ;; esac
+        os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+        base="https://github.com/kamllistos/kam/releases"
+        if [ "$KAM_VERSION" = latest ]; then url="$base/latest/download"; else url="$base/download/$KAM_VERSION"; fi
+        dir="$RUNNER_TEMP/kam"
+        mkdir -p "$dir"
+        curl -fsSL "$url/kam_${os}_${arch}.tar.gz" -o "$dir/kam.tar.gz"
+        curl -fsSL "$url/checksums.txt" -o "$dir/checksums.txt"
+        (cd "$dir" && grep " kam_${os}_${arch}.tar.gz\$" checksums.txt | sed "s/kam_${os}_${arch}.tar.gz/kam.tar.gz/" | sha256sum -c -)
+        tar -xzf "$dir/kam.tar.gz" -C "$dir" kam
+        echo "$dir" >> "$GITHUB_PATH"
+
+    - name: Run kam diff
+      id: diff
+      shell: bash
+      env:
+        PLAN: ${{ inputs.plan }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        ACCOUNTS: ${{ inputs.accounts }}
+      run: |
+        set -euo pipefail
+        report="$RUNNER_TEMP/kam-report.md"
+        kam diff --format markdown --account "$ACCOUNTS" "$PLAN" > "$report"
+        cat "$report" >> "$GITHUB_STEP_SUMMARY"
+        echo "report=$report" >> "$GITHUB_OUTPUT"
+        echo "max-severity=$(kam diff --format json --account "$ACCOUNTS" "$PLAN" | jq -r .max_severity)" >> "$GITHUB_OUTPUT"
+        kam diff --format text --no-color --fail-on "$FAIL_ON" --account "$ACCOUNTS" "$PLAN"

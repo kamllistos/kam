@@ -1,0 +1,204 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.8",
+  "resource_changes": [
+    {
+      "address": "aws_iam_role.ci",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "ci",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "name": "ci-deploy",
+          "arn": "arn:aws:iam::111122223333:role/ci-deploy",
+          "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\",\"token.actions.githubusercontent.com:sub\":\"repo:acme/app:ref:refs/heads/main\"}}}]}",
+          "inline_policy": [],
+          "managed_policy_arns": []
+        },
+        "after": {
+          "name": "ci-deploy",
+          "arn": "arn:aws:iam::111122223333:role/ci-deploy",
+          "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\"}}}]}",
+          "inline_policy": [],
+          "managed_policy_arns": []
+        }
+      }
+    },
+    {
+      "address": "aws_iam_policy.ci",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "ci",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "name": "ci-deploy",
+          "arn": "arn:aws:iam::111122223333:policy/ci-deploy",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::acme-artifacts/*\"}]}"
+        },
+        "after": {
+          "name": "ci-deploy",
+          "arn": "arn:aws:iam::111122223333:policy/ci-deploy",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::acme-artifacts/*\"},{\"Sid\":\"DeployLambdas\",\"Effect\":\"Allow\",\"Action\":[\"iam:PassRole\",\"lambda:CreateFunction\",\"lambda:InvokeFunction\"],\"Resource\":\"*\"}]}"
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy_attachment.ci",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "ci",
+      "change": {
+        "actions": ["no-op"],
+        "before": {"role": "ci-deploy", "policy_arn": "arn:aws:iam::111122223333:policy/ci-deploy"},
+        "after": {"role": "ci-deploy", "policy_arn": "arn:aws:iam::111122223333:policy/ci-deploy"}
+      }
+    },
+    {
+      "address": "aws_iam_role.analytics",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "analytics",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "analytics-reader",
+          "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::444455556666:root\"},\"Action\":\"sts:AssumeRole\"}]}",
+          "inline_policy": [],
+          "managed_policy_arns": []
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.analytics",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "analytics",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "read-data",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"secretsmanager:GetSecretValue\",\"Resource\":\"*\"},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::acme-data\",\"arn:aws:s3:::acme-data/*\"]}]}"
+        }
+      }
+    },
+    {
+      "address": "aws_iam_user.alice",
+      "mode": "managed",
+      "type": "aws_iam_user",
+      "name": "alice",
+      "change": {"actions": ["no-op"], "before": {"name": "alice"}, "after": {"name": "alice"}}
+    },
+    {
+      "address": "aws_iam_group.admins",
+      "mode": "managed",
+      "type": "aws_iam_group",
+      "name": "admins",
+      "change": {"actions": ["no-op"], "before": {"name": "admins"}, "after": {"name": "admins"}}
+    },
+    {
+      "address": "aws_iam_group.developers",
+      "mode": "managed",
+      "type": "aws_iam_group",
+      "name": "developers",
+      "change": {"actions": ["no-op"], "before": {"name": "developers"}, "after": {"name": "developers"}}
+    },
+    {
+      "address": "aws_iam_group_policy_attachment.admins",
+      "mode": "managed",
+      "type": "aws_iam_group_policy_attachment",
+      "name": "admins",
+      "change": {
+        "actions": ["no-op"],
+        "before": {"group": "admins", "policy_arn": "arn:aws:iam::aws:policy/AdministratorAccess"},
+        "after": {"group": "admins", "policy_arn": "arn:aws:iam::aws:policy/AdministratorAccess"}
+      }
+    },
+    {
+      "address": "aws_iam_group_policy.developers",
+      "mode": "managed",
+      "type": "aws_iam_group_policy",
+      "name": "developers",
+      "change": {
+        "actions": ["no-op"],
+        "before": {"name": "describe", "group": "developers", "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"ec2:Describe*\",\"Resource\":\"*\"}]}"},
+        "after": {"name": "describe", "group": "developers", "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"ec2:Describe*\",\"Resource\":\"*\"}]}"}
+      }
+    },
+    {
+      "address": "aws_iam_user_group_membership.alice",
+      "mode": "managed",
+      "type": "aws_iam_user_group_membership",
+      "name": "alice",
+      "change": {
+        "actions": ["update"],
+        "before": {"user": "alice", "groups": ["developers"]},
+        "after": {"user": "alice", "groups": ["admins", "developers"]}
+      }
+    },
+    {
+      "address": "aws_iam_role.legacy",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "legacy",
+      "change": {
+        "actions": ["delete"],
+        "before": {
+          "name": "legacy-batch",
+          "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+          "inline_policy": [],
+          "managed_policy_arns": []
+        },
+        "after": null
+      }
+    },
+    {
+      "address": "aws_iam_role_policy_attachment.legacy",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "legacy",
+      "change": {
+        "actions": ["delete"],
+        "before": {"role": "legacy-batch", "policy_arn": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"},
+        "after": null
+      }
+    },
+    {
+      "address": "aws_s3_bucket.data",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "data",
+      "change": {"actions": ["no-op"], "before": {"bucket": "acme-data"}, "after": {"bucket": "acme-data"}}
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_iam_role_policy.analytics",
+          "mode": "managed",
+          "type": "aws_iam_role_policy",
+          "name": "analytics",
+          "expressions": {
+            "name": {"constant_value": "read-data"},
+            "role": {"references": ["aws_iam_role.analytics.id", "aws_iam_role.analytics"]},
+            "policy": {"references": ["data.aws_iam_policy_document.analytics.json", "data.aws_iam_policy_document.analytics"]}
+          }
+        },
+        {
+          "address": "aws_iam_role_policy_attachment.ci",
+          "mode": "managed",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "ci",
+          "expressions": {
+            "role": {"references": ["aws_iam_role.ci.name", "aws_iam_role.ci"]},
+            "policy_arn": {"references": ["aws_iam_policy.ci.arn", "aws_iam_policy.ci"]}
+          }
+        }
+      ]
+    }
+  }
+}

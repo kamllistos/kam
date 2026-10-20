@@ -1,0 +1,59 @@
+# Release with: git tag v0.1.0 && git push origin v0.1.0  (the release workflow runs GoReleaser)
+version: 2
+project_name: kam
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/kamllistos/kam/internal/cli.Version={{ .Version }}
+      - -X github.com/kamllistos/kam/internal/cli.Commit={{ .ShortCommit }}
+
+archives:
+  - formats: [tar.gz]
+    # No version in the name, so .../releases/latest/download/kam_linux_amd64.tar.gz always works.
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+homebrew_casks:
+  - name: kam
+    repository:
+      owner: kamllistos
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/kamllistos/kam
+    description: Explain what IAM access a Terraform plan grants before you apply it
+    commit_msg_template: "kam {{ .Tag }}"
+    hooks:
+      post:
+        # The binary is not notarized; clear the quarantine flag so macOS will run it.
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/kam"]
+          end
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
